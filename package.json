@@ -1,0 +1,46 @@
+{
+  "name": "tetord-desktop",
+  "version": "2.1.1",
+  "description": "TETORD — Teto + Word, desktop edition",
+  "main": "electron/main.js",
+  "author": "TETORD",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder --win --x64",
+    "dist": "electron-builder --win"
+  },
+  "build": {
+    "appId": "com.tetord.desktop",
+    "productName": "TETORD",
+    "artifactName": "TETORD-Setup-${version}-${arch}.${ext}",
+    "directories": { "output": "dist" },
+    "files": [
+      "MiWord/**/*",
+      "electron/**/*",
+      "VERSION",
+      "README.md",
+      "CHANGELOG.md",
+      "package.json"
+    ],
+    "asar": true,
+    "win": {
+      "target": ["nsis", "portable"]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "TETORD",
+      "artifactName": "TETORD-Setup-${version}-${arch}.${ext}"
+    },
+    "portable": {
+      "artifactName": "TETORD-${version}-${arch}.${ext}"
+    }
+  },
+  "devDependencies": {
+    "electron": "^38.0.0",
+    "electron-builder": "^26.0.0"
+  }
+}

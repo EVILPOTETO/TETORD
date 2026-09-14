@@ -1,24 +1,54 @@
-# Changelog
+## 3.4.0 — TETORD Files / Office Hub
 
-## 2.1.1 — Más fuentes y colores
-- Ampliada la paleta de color de texto a 19 opciones.
-- Ampliada la paleta de resaltado a 15 opciones.
-- Añadidas más fuentes comunes: Aptos, Cambria, Candara, Consolas, Garamond, Segoe UI y Tahoma.
-- La paleta mantiene el comportamiento contextual existente y funciona con la selección actual del editor.
+- Nuevo módulo **Archivos** dentro de TETORD Office.
+- Vista común de archivos locales de Writer, Calc y Slides.
+- Búsqueda por nombre y filtros por aplicación.
+- Acciones rápidas para crear Writer, Calc y Slides.
+- Panel de archivos recientes en el inicio de Office.
+- Apertura directa de documentos Writer guardados en el almacenamiento local de Mi Word.
+- Metadatos de actividad local para Calc y Slides.
+- Navegación unificada entre Inicio, Archivos, Writer, Calc, Slides y Messenger.
+- Se mantiene el modelo local/offline: no hay nube ni sincronización de red en esta versión.
+
+# CHANGELOG
+
+## 2.9.0 — Correspondencia
+- Combinación de correspondencia local.
+- Importación/pegado de CSV, TSV y texto delimitado.
+- Destinatarios y campos dinámicos.
+- Inserción de campos `{{Campo}}`.
+- Vista previa por destinatario.
+- Finalización en un HTML combinado con saltos de página.
+
+## 2.8.0
+- Paginación e impresión PRO.
+
+## 2.7.1
+- Barra contextual de imágenes y tablas corregida.
+
+## 3.0.0 — TETORD Office
+- Shell unificado con Writer, Calc, Slides y Messenger.
+- Calc local: celdas, fórmulas básicas, SUM y CSV.
+- Slides local: diapositivas, miniaturas y presentación.
+- Messenger local persistente, preparado para backend futuro.
 
 
-## 1.1.0
-- Añadida pantalla inicial de Mi Word.
-- Añadidas plantillas de documento.
-- Añadido acceso rápido a documentos recientes.
-- Añadido acceso para abrir documentos desde la pantalla inicial.
-- La pantalla inicial respeta el flujo de recuperación local.
+## 3.1.0 — Writer PRO
+- Historial local de versiones por documento.
+- Restauración de versiones con respaldo previo.
+- Saltos de sección en página siguiente.
+- Pegar texto sin formato.
+- Estadísticas de texto seleccionado.
+- Atajos de teclado para estilos, pegado sin formato, impresión y Guardar como.
 
-- 2.0.0: identidad TETORD, herramientas de párrafo, ecuaciones, símbolos, notas al pie, tabla de contenido, marcadores y edición avanzada de tablas.
+## 3.3.0 — Calc PRO + identidad visual Office
+- Calc evoluciona a módulo PRO: múltiples hojas, renombrado de hojas, formato de celdas, formatos numérico/moneda/porcentaje, alineación y fondo.
+- Motor de fórmulas ampliado: SUM, AVERAGE, MIN, MAX, COUNT e IF básico.
+- Importación CSV crea una hoja nueva; exportación usa la hoja activa.
+- Identidad visual por aplicación: Writer rojo pastel (Teto), Calc amarillo pastel, Slides azul pastel.
+- Persistencia local compatible con el formato Calc anterior.
 
-## 2.1.0 — Importación DOCX
-- Añadida apertura de documentos `.docx` directamente desde Archivo > Abrir.
-- Importa texto, párrafos, encabezados básicos, negrita, cursiva, subrayado, tachado, superíndice y subíndice.
-- Importa tablas básicas y saltos de página marcados por Word.
-- Recupera tamaño/orientación/márgenes y encabezado/pie cuando están presentes.
-- La descompresión DOCX se realiza localmente en el navegador, sin servicios externos.
+## 3.3.0 — Slides PRO
+- Slides evoluciona a editor con temas, fondos, duplicación e imágenes locales.
+- Modo presentación navegable con teclado y botones.
+- Identidad azul pastel oficial inspirada en Miku.

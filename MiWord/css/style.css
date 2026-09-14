@@ -300,6 +300,14 @@ button {
   min-height: var(--page-min-height);
   max-width: 100%;
   background: var(--color-page);
+  background-image: repeating-linear-gradient(
+    to bottom,
+    var(--color-page) 0,
+    var(--color-page) calc(var(--page-height) - var(--page-gap)),
+    var(--color-workspace, #eef0f2) calc(var(--page-height) - var(--page-gap)),
+    var(--color-workspace, #eef0f2) var(--page-height)
+  );
+  background-repeat: repeat-y;
   box-shadow: 0 2px 10px var(--color-page-shadow);
   flex: 0 0 auto;
 }
@@ -639,6 +647,9 @@ button {
 
 .page-content {
   min-height: 100%;
+  position: relative;
+  background: transparent;
+  box-sizing: border-box;
 }
 
 .ruler-marker {
@@ -812,7 +823,55 @@ button {
 .table-actions button:hover { background:var(--color-hover); }
 .table-actions .primary-action { background:var(--color-accent); border-color:var(--color-accent); color:#fff; }
 
+/* =========================================================
+   FASE 2.3 — PAGINACIÓN FÍSICA VISUAL
+   Cada tramo de altura corresponde a una hoja; el contenido sigue
+   siendo un único documento editable para preservar selección/historial.
+   ========================================================= */
+.page {
+  --page-gap: 24px;
+  background-color: var(--color-page);
+}
+.page-content {
+  overflow: visible;
+}
+.page-content::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: calc(100% + var(--page-gap));
+  pointer-events: none;
+  z-index: 0;
+}
+.page-content > * {
+  position: relative;
+  z-index: 1;
+}
+.page-break {
+  position: relative;
+  height: 24px;
+  margin: 18px 0;
+  border: 0;
+  background: var(--color-workspace, #eef0f2);
+  box-shadow: 0 -1px 0 var(--color-divider), 0 1px 0 var(--color-divider);
+  break-after: page;
+  page-break-after: always;
+}
+
+.dark-mode .page {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    var(--color-page) 0,
+    var(--color-page) calc(var(--page-height) - var(--page-gap)),
+    var(--color-workspace, #1d2226) calc(var(--page-height) - var(--page-gap)),
+    var(--color-workspace, #1d2226) var(--page-height)
+  );
+}
+
 @media print {
+  .page { background: var(--color-page); box-shadow: none; }
   .page-break { break-after: page; page-break-after: always; border: 0; margin: 0; }
   .document-image { max-width: 100%; }
   .document-table { page-break-inside: auto; }
@@ -1291,3 +1350,369 @@ html[data-start-screen="open"] .statusbar { visibility:hidden; }
 .document-image.is-selected { outline:2px solid var(--tetord-green); outline-offset:3px; }
 .document-table.is-selected { outline:2px solid var(--tetord-green); outline-offset:2px; }
 @media (max-width:600px) { .tetord-grid { grid-template-columns:1fr; } .tetord-grid label:nth-child(3){grid-column:auto;} }
+
+/* FASE 2 — diálogos de archivo */
+.start-header-actions { display:flex; align-items:center; gap:10px; }
+.file-menu-label { padding:6px 10px 3px; color:var(--color-text-faint); font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.04em; }
+.save-dialog { width:min(520px,100%); }
+.save-dialog-actions { display:flex; justify-content:flex-end; gap:8px; padding:16px 22px 20px; border-top:1px solid var(--color-divider); }
+.save-dialog-actions button { border:1px solid var(--color-chrome-border); background:var(--color-chrome); color:var(--color-text); border-radius:5px; padding:8px 14px; cursor:pointer; }
+.save-dialog-actions button:hover { background:var(--color-hover); }
+.save-dialog-actions .primary-btn { background:var(--color-accent); border-color:var(--color-accent); color:var(--color-accent-contrast); }
+.save-dialog-actions .primary-btn:hover { filter:brightness(.94); }
+.save-form { display:grid; gap:7px; padding:20px 22px; }
+.save-form label { font-size:12px; color:var(--color-text-muted); font-weight:600; }
+.save-form input, .save-form select { width:100%; border:1px solid var(--color-chrome-border); border-radius:5px; background:var(--color-chrome); color:var(--color-text); padding:9px 10px; font:inherit; }
+
+/* FASE 3 — navegación tipo Word: menús de Disposición, Referencias,
+   Correspondencia y Ayuda reutilizan el sistema de menús existente. */
+.menu-info-text {
+  margin: 8px 10px;
+  max-width: 300px;
+  color: var(--muted, #5d636b);
+  font-size: 12px;
+  line-height: 1.5;
+  white-space: normal;
+}
+.settings-menu button:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+/* =========================================================
+   TETORD 2.2 — CINTA DE OPCIONES
+   ========================================================= */
+.ribbon {
+  flex: 0 0 auto;
+  background: var(--color-chrome);
+  border-bottom: 1px solid var(--color-chrome-border);
+}
+.ribbon-tabs {
+  height: 34px;
+  display: flex;
+  align-items: stretch;
+  gap: 2px;
+  padding: 0 10px;
+  border-bottom: 1px solid var(--color-divider);
+}
+.ribbon-tab {
+  border: 0;
+  background: transparent;
+  color: var(--color-text-muted);
+  padding: 0 13px;
+  font-size: 13px;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+}
+.ribbon-tab:hover { background: var(--color-hover); color: var(--color-text); }
+.ribbon-tab.is-active { color: var(--color-accent); font-weight: 600; border-bottom-color: var(--color-accent); background: var(--color-accent-soft); }
+.ribbon-body { min-height: 88px; overflow-x: auto; }
+.ribbon-panel { display: none; min-height: 88px; padding: 6px 10px 5px; gap: 10px; align-items: stretch; white-space: nowrap; }
+.ribbon-panel.is-active { display: flex; }
+.ribbon-group { min-width: 76px; padding: 0 9px 2px; border-right: 1px solid var(--color-divider); display: flex; flex-direction: column; justify-content: space-between; }
+.ribbon-group:last-child { border-right: 0; }
+.ribbon-group > span { display: block; text-align: center; font-size: 10px; color: var(--color-text-faint); margin-top: 3px; }
+.ribbon-command-row { display: flex; align-items: center; justify-content: center; gap: 3px; }
+.ribbon-command-row button { min-width: 40px; height: 48px; padding: 4px 5px; border: 1px solid transparent; background: transparent; border-radius: 4px; color: var(--color-text); cursor: pointer; font-size: 17px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
+.ribbon-command-row button:hover:not(:disabled) { background: var(--color-hover); border-color: var(--color-divider); }
+.ribbon-command-row button:disabled { opacity: .45; cursor: not-allowed; }
+.ribbon-command-row small { display: block; font-size: 9px; color: var(--color-text-muted); font-weight: 400; }
+.ribbon-command-row--format button { min-width: 42px; }
+.ribbon-font-select { width: 150px; height: 28px; border: 1px solid var(--color-divider); border-radius: 4px; background: var(--color-page); color: var(--color-text); padding: 0 7px; }
+.ribbon-size-select { width: 58px; height: 28px; border: 1px solid var(--color-divider); border-radius: 4px; background: var(--color-page); color: var(--color-text); padding: 0 5px; }
+.ribbon-format-row { display: flex; gap: 5px; justify-content: center; margin-bottom: 3px; }
+.ribbon-group--format { min-width: 315px; }
+.ribbon-group--styles { min-width: 310px; }
+.ribbon-style-grid { display: flex; gap: 3px; align-items: stretch; overflow: hidden; }
+.ribbon-style-grid button { min-width: 64px; height: 50px; padding: 5px 7px; border: 1px solid var(--color-divider); border-radius: 4px; background: var(--color-page); color: var(--color-text); text-align: left; cursor: pointer; display: flex; flex-direction: column; justify-content: center; }
+.ribbon-style-grid button:hover { background: var(--color-hover); border-color: var(--color-accent); }
+.ribbon-style-grid strong { font-size: 12px; }
+.ribbon-style-grid small { font-size: 9px; color: var(--color-text-muted); margin-top: 2px; }
+.ribbon-link { border: 0; background: transparent; color: var(--color-accent); cursor: pointer; font-size: 10px; align-self: center; margin-top: 2px; }
+.ribbon-help { min-width: 350px; max-width: 650px; display: flex; flex-direction: column; gap: 4px; padding: 8px 12px; color: var(--color-text); }
+.ribbon-help strong { font-size: 14px; color: var(--color-accent); }
+.ribbon-help span, .ribbon-help small { white-space: normal; font-size: 11px; line-height: 1.35; color: var(--color-text-muted); }
+.styles-save-btn { width: 100%; margin-bottom: 5px; border: 1px solid var(--color-divider); background: var(--color-page); border-radius: 4px; padding: 6px 8px; color: var(--color-accent); cursor: pointer; }
+.styles-save-btn:hover { background: var(--color-hover); }
+
+@media (max-width: 900px) {
+  .ribbon-tabs { overflow-x: auto; }
+  .ribbon-group--format, .ribbon-group--styles { min-width: 250px; }
+}
+
+
+/* TETORD 2.4 — contextual image/table controls */
+.advanced-context-bar {
+  display:flex;
+  align-items:center;
+  gap:6px;
+  flex-wrap:wrap;
+  padding:6px 10px;
+  border-top:1px solid var(--border,#d9dde2);
+  border-bottom:1px solid var(--border,#d9dde2);
+  background:var(--surface,#fff);
+  font-size:12px;
+}
+.advanced-context-bar[hidden]{display:none}
+.advanced-context-title{font-weight:600;margin-right:4px;color:var(--text,#20252b)}
+.advanced-context-bar button{
+  border:1px solid var(--border,#d9dde2);
+  background:var(--surface,#fff);
+  border-radius:4px;
+  padding:4px 7px;
+  cursor:pointer;
+}
+.advanced-context-bar button:hover{background:var(--hover,#f3f5f7)}
+.page-content img.tetord-selected-image{
+  outline:2px solid var(--accent,#2f5d50);
+  outline-offset:2px;
+}
+.page-content img[data-wrap="square-left"]{float:left;margin:0 16px 10px 0}
+.page-content img[data-wrap="square-right"]{float:right;margin:0 0 10px 16px}
+.page-content img[data-wrap="inline"]{float:none;margin:10px 0}
+.page-content table.tetord-selected-table{outline:2px solid var(--accent,#2f5d50);outline-offset:2px}
+
+/* =========================================================
+   TETORD 2.5.0 — Revisar: comentarios, control de cambios,
+   sinónimos, comparar documentos y protección.
+   ========================================================= */
+
+.tetord-comment-anchor { background: rgba(47,93,80,.14); border-bottom: 2px solid var(--color-accent,#2f5d50); cursor: pointer; }
+.tetord-comment-anchor.is-active { background: rgba(47,93,80,.32); }
+.tetord-comment-anchor[data-comment-resolved="1"] { background: rgba(120,120,120,.12); border-bottom-color: #9aa0a8; }
+
+.tetord-ins { background: rgba(47,93,80,.14); color: #1f6f4a; text-decoration: underline; text-decoration-color: #1f6f4a; }
+.tetord-del { background: rgba(178,58,58,.10); color: #a33a3a; text-decoration: line-through; }
+.editor.tc-hide-marks .tetord-ins { background: none; color: inherit; text-decoration: none; }
+.editor.tc-hide-marks .tetord-del { display: none; }
+#ribbonTrackChangesBtn[aria-pressed="true"] { background: var(--color-accent-soft,#e6efec); border-color: var(--color-accent,#2f5d50); }
+
+.comments-panel {
+  position: fixed;
+  top: 96px;
+  right: 12px;
+  bottom: 48px;
+  width: 300px;
+  max-width: calc(100vw - 24px);
+  background: var(--color-chrome,#fff);
+  border: 1px solid var(--color-chrome-border,#dcdee2);
+  border-radius: 8px;
+  box-shadow: 0 12px 30px rgba(24,28,33,.16);
+  z-index: 9000;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.comments-panel[hidden] { display: none; }
+.comments-panel-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 12px; border-bottom: 1px solid var(--color-divider,#e1e4e7);
+}
+.comments-panel-tools { display: flex; gap: 4px; align-items: center; }
+.comments-panel-tools button { border: 1px solid var(--color-border,#ccd2d7); background: var(--color-surface,#fff); border-radius: 4px; padding: 3px 8px; cursor: pointer; }
+.comments-list { overflow-y: auto; padding: 10px; display: grid; gap: 10px; }
+.comments-empty { color: var(--color-text-muted,#666c74); font-size: 13px; padding: 8px 2px; }
+.comment-card { border: 1px solid var(--color-divider,#e1e4e7); border-radius: 6px; padding: 8px 10px; background: var(--color-bg-workspace,#f7f8f9); }
+.comment-card.is-resolved { opacity: .6; }
+.comment-card blockquote { margin: 0 0 6px; padding-left: 8px; border-left: 3px solid var(--color-accent,#2f5d50); font-size: 12px; color: var(--color-text-muted,#666c74); font-style: normal; }
+.comment-entry { margin-bottom: 6px; }
+.comment-entry strong { font-size: 12px; }
+.comment-entry span { display: inline-block; margin-left: 6px; font-size: 11px; color: var(--color-text-faint,#9aa0a8); }
+.comment-entry p { margin: 3px 0 0; font-size: 13px; white-space: pre-wrap; }
+.comment-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.comment-actions button { font-size: 11px; padding: 4px 7px; border: 1px solid var(--color-border,#ccd2d7); border-radius: 4px; background: var(--color-surface,#fff); cursor: pointer; }
+.comment-actions button.danger-action { color: #a33a3a; border-color: #d9a3a3; }
+
+.synonyms-results { display: grid; gap: 6px; max-height: 220px; overflow-y: auto; }
+.synonyms-results .synonym-chip { display: inline-flex; align-items: center; justify-content: space-between; gap: 8px; border: 1px solid var(--color-border,#ccd2d7); border-radius: 5px; padding: 6px 9px; cursor: pointer; background: var(--color-surface,#fff); }
+.synonyms-results .synonym-chip:hover { background: var(--color-accent-soft,#e6efec); }
+.synonyms-empty { color: var(--color-text-muted,#666c74); font-size: 12px; }
+
+.compare-dialog { width: min(720px, 100%); }
+.compare-body { padding: 16px 22px 22px; display: grid; gap: 12px; }
+.compare-summary { font-size: 13px; color: var(--color-text-muted,#666c74); }
+.compare-result { max-height: 360px; overflow-y: auto; border: 1px solid var(--color-divider,#e1e4e7); border-radius: 6px; padding: 12px; line-height: 1.6; font-size: 13px; background: var(--color-bg-workspace,#f7f8f9); }
+.compare-result ins.diff-add { background: rgba(47,93,80,.18); color: #1f6f4a; text-decoration: none; }
+.compare-result del.diff-del { background: rgba(178,58,58,.12); color: #a33a3a; }
+
+.tetord-protected .editor { outline: 2px dashed #a33a3a; outline-offset: -2px; }
+
+.dark-mode .comments-panel,
+.dark-mode .comment-card,
+.dark-mode .synonyms-results .synonym-chip,
+.dark-mode .compare-result { background: var(--color-chrome,#242830); border-color: var(--color-chrome-border,#3a3f47); }
+
+/* TETORD 2.6 — Referencias */
+.tetord-citation { color: inherit; }
+.tetord-crossref { color: inherit; text-decoration: underline; text-decoration-style: dotted; cursor: pointer; }
+.tetord-caption { text-align: center; margin: 6px 0 14px; font-size: .92em; color: #555d66; }
+.tetord-bibliography, .tetord-index, .tetord-endnotes { margin: 24px 0; padding-top: 12px; border-top: 1px solid #d8dce0; }
+.tetord-bibliography h2, .tetord-index h2, .tetord-endnotes h3 { margin: 0 0 10px; }
+.tetord-bibliography li, .tetord-index li, .tetord-endnotes li { margin: 5px 0; }
+.tetord-index-entry { background: rgba(47,93,80,.08); border-bottom: 1px dotted currentColor; }
+.tetord-footnote-ref, .tetord-endnote-ref { cursor: help; }
+/* TETORD 2.7 — Imágenes y tablas PRO */
+#editor img.tetord-wrap-left{float:left;display:block;margin:0 16px 10px 0;max-width:55%;}
+#editor img.tetord-wrap-right{float:right;display:block;margin:0 0 10px 16px;max-width:55%;}
+#editor img.tetord-wrap-inline{float:none;display:block;clear:both;}
+#editor img.document-image{transition:none;}
+.image-crop-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;}
+.image-crop-grid input{width:100%;box-sizing:border-box;min-height:30px;}
+#editor table.document-table thead{display:table-header-group;}
+#editor table.document-table[data-repeat-header="true"] tr:first-child{break-after:auto;}
+@media print{#editor img.tetord-wrap-left{float:left;max-width:55%;}#editor img.tetord-wrap-right{float:right;max-width:55%;}#editor table.document-table[data-repeat-header="true"] tr:first-child{display:table-header-group;}}
+
+
+/* TETORD 2.7.1 — barra contextual verdaderamente contextual */
+.advanced-context-bar[hidden] { display: none !important; }
+.advanced-context-bar button[hidden] { display: none !important; }
+.advanced-context-bar[data-context-type="image"] { border-top-color: var(--accent, #2f5d50); }
+.advanced-context-bar[data-context-type="table"] { border-top-color: var(--accent, #2f5d50); }
+.page-content img.is-selected { outline: 2px solid var(--accent, #2f5d50); outline-offset: 2px; }
+.page-content table.is-selected { outline: 2px solid var(--accent, #2f5d50); outline-offset: 2px; }
+.page-content img.tetord-wrap-left { float: left; margin: 0 16px 10px 0; }
+.page-content img.tetord-wrap-right { float: right; margin: 0 0 10px 16px; }
+.page-content img.tetord-wrap-inline { float: none; margin: 10px 0; }
+
+
+/* =========================================================
+   TETORD 2.8 — PAGINACIÓN E IMPRESIÓN PRO
+   ========================================================= */
+.page-content[data-columns="2"] { column-count: 2; column-gap: 1.2cm; }
+.page-content[data-columns="3"] { column-count: 3; column-gap: 1.2cm; }
+.page-content[data-columns="1"] { column-count: 1; }
+.page-content.hyphenation-enabled { hyphens: auto; overflow-wrap: break-word; }
+.page-content:not(.hyphenation-enabled) { hyphens: manual; }
+.page-content > .page-break { column-span: all; }
+.page-content.line-numbers-enabled { counter-reset: tetord-block; }
+.page-content.line-numbers-enabled > p,
+.page-content.line-numbers-enabled > h1,
+.page-content.line-numbers-enabled > h2,
+.page-content.line-numbers-enabled > h3,
+.page-content.line-numbers-enabled > blockquote,
+.page-content.line-numbers-enabled > pre,
+.page-content.line-numbers-enabled > ul,
+.page-content.line-numbers-enabled > ol { counter-increment: tetord-block; position: relative; }
+.page-content.line-numbers-enabled > p::before,
+.page-content.line-numbers-enabled > h1::before,
+.page-content.line-numbers-enabled > h2::before,
+.page-content.line-numbers-enabled > h3::before,
+.page-content.line-numbers-enabled > blockquote::before,
+.page-content.line-numbers-enabled > pre::before,
+.page-content.line-numbers-enabled > ul::before,
+.page-content.line-numbers-enabled > ol::before {
+  content: counter(tetord-block);
+  position: absolute;
+  right: calc(100% + 12px);
+  top: 0;
+  min-width: 28px;
+  text-align: right;
+  color: #9aa1a8;
+  font: 10px/1.5 ui-monospace, SFMono-Regular, Consolas, monospace;
+  user-select: none;
+  pointer-events: none;
+}
+.print-preview-modal { z-index: 9500; }
+.print-preview-dialog { width: min(1200px, 96vw); height: min(90vh, 900px); display:flex; flex-direction:column; background:var(--color-chrome,#fff); border:1px solid var(--color-chrome-border,#d7dbe0); border-radius:8px; box-shadow:0 18px 50px rgba(0,0,0,.2); overflow:hidden; }
+.print-preview-actions { display:flex; align-items:center; gap:8px; }
+.print-preview-actions button { border:1px solid var(--color-chrome-border,#cfd4da); background:var(--color-surface,#fff); color:var(--color-text,#20242a); border-radius:5px; padding:7px 12px; cursor:pointer; }
+.print-preview-actions .primary-btn { background:var(--color-accent,#2f5d50); border-color:var(--color-accent,#2f5d50); color:#fff; }
+.print-preview-body { flex:1; overflow:auto; background:#e9ebed; padding:28px; display:flex; flex-direction:column; align-items:center; gap:24px; }
+.print-preview-page { flex:0 0 auto; box-sizing:border-box; background:#fff; color:#20242a; box-shadow:0 2px 12px rgba(0,0,0,.16); position:relative; font-family:Calibri,Carlito,"Segoe UI",Arial,sans-serif; font-size:12pt; line-height:1.5; overflow:hidden; }
+.print-preview-page .preview-header-wrap { min-height:18px; margin-bottom:12px; }
+.print-preview-page .preview-header { font-size:10pt; color:#5d636b; padding-bottom:5px; border-bottom:1px solid #d8dce0; text-align:center; }
+.print-preview-page .preview-content { min-height:calc(100% - 48px); }
+.print-preview-page .preview-content > * { break-inside:avoid; }
+.print-preview-page .preview-footer-wrap { position:absolute; left:inherit; right:inherit; bottom:18px; width:calc(100% - 0px); }
+.print-preview-page .preview-footer { font-size:9pt; color:#5d636b; padding-top:5px; border-top:1px solid #d8dce0; text-align:center; }
+.print-preview-page img { max-width:100%; height:auto; }
+.print-preview-page table { max-width:100%; }
+.dark-mode .print-preview-body { background:#1d2226; }
+.dark-mode .print-preview-page { background:#fff; color:#20242a; }
+@media print {
+  #printArea { display:block !important; background:#fff !important; }
+  #printArea .print-page { width:var(--print-page-width) !important; height:var(--print-page-height) !important; min-height:var(--print-page-height) !important; margin:0 !important; padding:0 !important; box-sizing:border-box; page-break-after:always; break-after:page; position:relative; overflow:hidden; background:#fff; color:#000; }
+  #printArea .print-page:last-child { page-break-after:auto; break-after:auto; }
+  #printArea .print-content { box-sizing:border-box; padding:var(--print-top-margin,25.4mm) var(--print-right-margin,23.3mm) var(--print-bottom-margin,25.4mm) var(--print-left-margin,23.3mm); width:100%; height:100%; column-count:1; }
+  #printArea .print-header { position:absolute; left:var(--print-left-margin,0); right:var(--print-right-margin,0); top:var(--print-top-margin,0); }
+  #printArea .print-footer { position:absolute; left:var(--print-left-margin,0); right:var(--print-right-margin,0); bottom:var(--print-bottom-margin,0); }
+  #printArea .print-content > * { break-inside:avoid; page-break-inside:avoid; }
+  #printArea img { max-width:100%; height:auto; }
+  #printArea table { max-width:100%; }
+}
+
+
+/* ============ TETORD 2.9 — Correspondencia ============ */
+.mail-merge-dialog { width: min(1100px, calc(100vw - 28px)); max-width: 1100px; }
+.mail-merge-body { padding: 16px; }
+.mail-merge-toolbar { display:flex; flex-wrap:wrap; gap:8px; padding-bottom:14px; border-bottom:1px solid var(--color-divider,#e1e4e7); }
+.mail-merge-toolbar button, .mail-merge-preview-nav button { border:1px solid var(--color-border,#ccd2d7); background:var(--color-surface,#fff); color:var(--color-text,#20252b); border-radius:5px; padding:7px 10px; cursor:pointer; }
+.mail-merge-grid { display:grid; grid-template-columns:minmax(280px,1fr) minmax(320px,1.15fr); gap:16px; padding-top:16px; }
+.mail-merge-label { display:grid; gap:7px; font-size:12px; font-weight:600; }
+.mail-merge-label textarea { width:100%; box-sizing:border-box; min-height:220px; resize:vertical; font:12px/1.45 Consolas,"Courier New",monospace; border:1px solid var(--color-border,#ccd2d7); border-radius:6px; padding:10px; background:var(--color-input,#fff); color:var(--color-text,#20252b); }
+.mail-merge-meta { display:flex; gap:14px; margin:9px 0; color:var(--color-muted,#6d737b); font-size:11px; }
+.mail-merge-fields { display:flex; flex-wrap:wrap; gap:6px; min-height:32px; }
+.mail-merge-field-chip { border:1px solid var(--color-border,#ccd2d7); background:var(--color-surface-alt,#f7f8f9); color:var(--color-text,#20252b); border-radius:14px; padding:5px 9px; cursor:pointer; font:11px inherit; }
+.mail-merge-preview-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:7px; font-size:12px; }
+.mail-merge-preview-head span { color:var(--color-muted,#6d737b); }
+.mail-merge-preview { min-height:300px; max-height:470px; overflow:auto; border:1px solid var(--color-border,#ccd2d7); background:#fff; color:#20252b; padding:28px; box-sizing:border-box; box-shadow:0 2px 8px rgba(0,0,0,.07); }
+.mail-merge-preview .page-break { display:none; }
+.mail-merge-preview-nav { display:flex; justify-content:space-between; margin-top:8px; }
+.mail-merge-status { min-height:18px; margin:12px 0 0; color:var(--color-muted,#6d737b); font-size:12px; }
+.tetord-merge-field { display:inline-block; padding:0 3px; border:1px dashed #7b8f88; background:#eef3f1; color:#244b41; border-radius:2px; }
+@media (max-width: 760px) { .mail-merge-grid { grid-template-columns:1fr; } .mail-merge-preview { min-height:220px; } }
+
+/* TETORD Office 3.0 */
+.office-launcher{margin-left:10px;border:1px solid var(--color-chrome-border);background:var(--color-chrome);color:var(--color-text);border-radius:5px;padding:5px 10px;font-size:12px;cursor:pointer}.office-launcher:hover{background:var(--color-hover);color:var(--color-accent)}
+body.office-mode{overflow:hidden}.office-mode .menubar,.office-mode #ribbon,.office-mode .toolbar,.office-mode #workspace,.office-mode .statusbar{display:none!important}.office-mode .titlebar-doc{display:none}.office-shell{position:fixed;inset:var(--titlebar-h) 0 0;z-index:80;background:var(--color-workspace,#eef0f2);display:flex;flex-direction:column}.office-shell[hidden]{display:none}.office-appbar{height:58px;flex:0 0 auto;display:flex;align-items:center;gap:22px;padding:0 18px;background:var(--color-chrome);border-bottom:1px solid var(--color-chrome-border)}.office-suite-title{display:flex;align-items:center;gap:10px;min-width:190px}.office-suite-mark{width:30px;height:30px;display:grid;place-items:center;border-radius:5px;background:var(--color-accent);color:#fff;font-weight:700}.office-suite-title strong,.office-suite-title small{display:block}.office-suite-title strong{font-size:15px}.office-suite-title small{font-size:10px;color:var(--color-text-muted)}.office-app-tabs{display:flex;gap:2px;height:100%;align-items:center}.office-app-tabs button{height:34px;border:0;background:transparent;padding:0 14px;border-radius:5px;color:var(--color-text-muted);cursor:pointer;font-size:13px}.office-app-tabs button:hover,.office-app-tabs button.is-active{background:var(--color-active);color:var(--color-accent);font-weight:600}.office-back-btn{margin-left:auto;border:1px solid var(--color-chrome-border);background:var(--color-chrome);color:var(--color-text);border-radius:5px;padding:7px 11px;cursor:pointer}.office-view{min-height:0;flex:1;overflow:auto}.office-home-view{padding:38px 48px}.office-welcome{max-width:1100px;margin:0 auto 26px;display:flex;justify-content:space-between;gap:30px}.office-eyebrow{font-size:11px;letter-spacing:.12em;color:var(--color-accent);font-weight:700;margin:0 0 8px}.office-welcome h1{font-size:28px;margin:0 0 8px}.office-welcome p:not(.office-eyebrow){margin:0;color:var(--color-text-muted)}.office-local-badge{font-size:10px;font-weight:700;padding:7px 10px;border:1px solid var(--color-chrome-border);border-radius:999px;background:var(--color-chrome);color:var(--color-text-muted);height:max-content}.office-app-grid{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:14px}.office-app-card{min-height:180px;text-align:left;border:1px solid var(--color-chrome-border);border-radius:9px;background:var(--color-chrome);padding:20px;cursor:pointer;display:flex;flex-direction:column;align-items:flex-start;gap:9px}.office-app-card:hover{border-color:var(--color-accent)}.office-app-icon{width:38px;height:38px;display:grid;place-items:center;border-radius:6px;background:var(--color-active);color:var(--color-accent);font-weight:700;font-size:19px}.office-app-card strong{font-size:17px}.office-app-card small{font-size:12px;line-height:1.5;color:var(--color-text-muted)}.office-notice{max-width:1100px;margin:20px auto 0;padding:13px 15px;border:1px solid var(--color-chrome-border);background:var(--color-chrome);border-radius:7px;font-size:12px;color:var(--color-text-muted)}.office-subbar{height:54px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;background:var(--color-chrome);border-bottom:1px solid var(--color-chrome-border)}.office-subbar strong{font-size:15px}.office-subbar span{font-size:11px;color:var(--color-text-muted);margin-left:9px}.office-subactions{display:flex;gap:7px}.office-subactions button{border:1px solid var(--color-chrome-border);background:var(--color-chrome);color:var(--color-text);border-radius:4px;padding:6px 10px;cursor:pointer;font-size:12px}.calc-formula-bar{height:40px;display:flex;align-items:center;gap:7px;padding:0 12px;background:var(--color-chrome);border-bottom:1px solid var(--color-divider)}.calc-name-box{width:62px;border:1px solid var(--color-chrome-border);padding:5px 8px;border-radius:3px;font-size:12px}.calc-fx{font-style:italic;font-weight:700;color:var(--color-text-muted)}.calc-formula-bar input{flex:1;border:1px solid var(--color-chrome-border);padding:6px 8px;border-radius:3px;background:var(--color-page);color:var(--color-text);outline:none}.calc-grid-wrap{overflow:auto;padding:16px}.calc-grid{border-collapse:collapse;min-width:900px;background:var(--color-page);font-size:12px}.calc-grid th{background:var(--color-active);font-weight:600;color:var(--color-text-muted);border:1px solid var(--color-divider);height:28px;min-width:84px}.calc-grid td{position:relative;border:1px solid var(--color-divider);min-width:84px;height:30px}.calc-grid td input{width:100%;height:30px;border:0;padding:4px 6px;background:transparent;color:var(--color-text);outline:none;font:inherit}.calc-grid td input:focus{box-shadow:inset 0 0 0 2px var(--color-accent)}.calc-grid .calc-value{position:absolute;right:4px;bottom:1px;font-size:8px;color:var(--color-text-faint);pointer-events:none}.slides-workspace{display:flex;height:calc(100% - 54px);min-height:500px}.slide-thumbs{width:220px;overflow:auto;padding:14px;background:var(--color-chrome);border-right:1px solid var(--color-chrome-border)}.slide-thumb{display:block;width:100%;text-align:left;border:1px solid var(--color-chrome-border);background:var(--color-page);padding:9px;margin-bottom:10px;border-radius:5px;cursor:pointer}.slide-thumb.is-active{outline:2px solid var(--color-accent)}.slide-thumb span,.slide-thumb strong,.slide-thumb small{display:block}.slide-thumb strong{font-size:12px}.slide-thumb small{font-size:10px;color:var(--color-text-muted);margin-top:3px}.slide-editor-area{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px;background:var(--color-workspace,#eef0f2)}.slide-canvas{width:min(900px,90%);aspect-ratio:16/9;background:var(--color-page);box-shadow:0 4px 18px rgba(24,28,33,.12);padding:50px 70px;display:flex;flex-direction:column;gap:18px}.slide-title-input{font-size:32px;font-weight:650;border:0;outline:none;background:transparent;color:var(--color-text)}.slide-body-input{flex:1;resize:none;border:0;outline:none;background:transparent;color:var(--color-text);font:18px/1.55 inherit}.slide-hint{font-size:11px;color:var(--color-text-faint)}.slide-present-overlay{position:fixed;inset:var(--titlebar-h) 0 0;z-index:120;background:#151817;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px}.slide-present-card{width:min(1100px,90vw);aspect-ratio:16/9;background:#fff;padding:70px 90px;color:#20252b}.slide-present-card h1{font-size:42px;margin:0 0 30px}.slide-present-card div{font-size:24px;line-height:1.55}.slide-present-overlay>button{padding:8px 14px;border:1px solid #fff;background:transparent;color:#fff;border-radius:5px}.messenger-layout{height:calc(100% - 54px);display:flex}.messenger-chats{width:280px;background:var(--color-chrome);border-right:1px solid var(--color-chrome-border);padding:10px;overflow:auto}.messenger-chat{width:100%;display:block;text-align:left;border:0;background:transparent;padding:11px;border-radius:5px;cursor:pointer}.messenger-chat:hover,.messenger-chat.is-active{background:var(--color-active)}.messenger-chat strong,.messenger-chat small{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.messenger-chat strong{font-size:13px}.messenger-chat small{font-size:10px;color:var(--color-text-muted);margin-top:3px}.messenger-conversation{flex:1;display:flex;flex-direction:column}.messenger-conversation-head{padding:14px 18px;background:var(--color-chrome);border-bottom:1px solid var(--color-divider)}.messenger-conversation-head strong,.messenger-conversation-head small{display:block}.messenger-conversation-head small{font-size:10px;color:var(--color-text-muted);margin-top:2px}.messenger-messages{flex:1;overflow:auto;padding:20px;display:flex;flex-direction:column;gap:8px}.message-bubble{max-width:70%;padding:9px 12px;border-radius:8px;font-size:13px;line-height:1.4}.message-bubble--other{align-self:flex-start;background:var(--color-chrome);border:1px solid var(--color-divider)}.message-bubble--me{align-self:flex-end;background:var(--color-active)}.messenger-composer{display:flex;gap:8px;padding:12px;background:var(--color-chrome);border-top:1px solid var(--color-divider)}.messenger-composer input{flex:1;border:1px solid var(--color-chrome-border);border-radius:5px;padding:9px;background:var(--color-page);color:var(--color-text)}.messenger-composer button{border:0;border-radius:5px;padding:8px 14px;background:var(--color-accent);color:#fff}
+@media(max-width:900px){.office-app-grid{grid-template-columns:repeat(2,1fr)}.office-suite-title{min-width:auto}.office-suite-title div{display:none}.office-back-btn{display:none}}
+
+/* =========================================================
+   WRITER PRO 3.1
+   ========================================================= */
+.ribbon-group--writer-pro { min-width: 270px; }
+.writer-versions-dialog { width: min(720px, calc(100vw - 40px)); }
+.writer-versions-list { max-height: 55vh; overflow: auto; padding: 10px 14px 16px; }
+.writer-version-row { display:flex; align-items:center; justify-content:space-between; gap:14px; padding:11px 4px; border-bottom:1px solid var(--color-divider); }
+.writer-version-row > div { min-width:0; display:flex; flex-direction:column; gap:3px; }
+.writer-version-row strong { font-size:12px; }
+.writer-version-row span { font-size:10px; color:var(--color-text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.writer-version-row button { border:1px solid var(--color-chrome-border); background:var(--color-chrome); color:var(--color-text); border-radius:4px; padding:6px 10px; cursor:pointer; }
+.writer-version-row button:hover { border-color:var(--color-accent); color:var(--color-accent); }
+.writer-empty-state { padding:24px; text-align:center; color:var(--color-text-muted); font-size:12px; }
+.tetord-section-break { display:flex; align-items:center; gap:8px; margin:16px 0; height:18px; border-top:1px dashed var(--color-accent); color:var(--color-accent); font:600 9px/1 var(--font-ui); user-select:none; }
+.tetord-section-break::before,.tetord-section-break::after { content:""; flex:1; }
+.tetord-section-break span { background:var(--color-page); padding:0 7px; }
+
+
+/* =========================================================
+   TETORD OFFICE APP IDENTITY + CALC PRO 3.2
+   Writer = pastel red / Teto · Calc = pastel yellow · Slides = pastel blue
+   ========================================================= */
+.office-product-icon{width:30px;height:30px;display:grid;place-items:center;border-radius:5px;font-weight:800;background:var(--color-active);color:var(--color-accent)}
+.office-product-icon--calc{--color-accent:#a97900;--color-active:#fff3bf}
+.office-app-card--writer .office-app-icon{background:#f7c8cf;color:#9e4657}
+.office-app-card--calc .office-app-icon{background:#fff0a8;color:#9b7600}
+.office-app-card--slides .office-app-icon{background:#cfe1ff;color:#416da8}
+.office-app-card--writer:hover{border-color:#d98a98}.office-app-card--calc:hover{border-color:#d8b74f}.office-app-card--slides:hover{border-color:#83a9df}
+.office-app-tabs button[data-office-app="writer"].is-active{background:#f7c8cf;color:#9e4657}
+.office-app-tabs button[data-office-app="calc"].is-active{background:#fff0a8;color:#8f6b00}
+.office-app-tabs button[data-office-app="slides"].is-active{background:#cfe1ff;color:#416da8}
+.office-calc-mode .office-appbar{border-bottom-color:#eadb8c}.office-calc-mode .office-subbar{background:#fffdf2}.office-calc-mode .office-suite-mark{background:#e8c95c;color:#5b4600}
+.office-slides-mode .office-suite-mark{background:#8fb2e8}.office-slides-mode .office-appbar{border-bottom-color:#b8cdeb}
+.office-app-heading{display:flex;align-items:center;gap:9px}.office-app-heading>div{display:flex;flex-direction:column}.office-app-heading span:not(.office-product-icon){margin-left:0}
+.calc-toolbar{height:42px;display:flex;align-items:center;gap:5px;padding:0 12px;background:#fff9df;border-bottom:1px solid #eadb8c}.calc-toolbar button{min-width:30px;height:28px;border:1px solid #dfd2a1;background:#fff;color:#4b4a43;border-radius:4px;cursor:pointer}.calc-toolbar button:hover{background:#fff0a8}.calc-toolbar label{display:flex;align-items:center;gap:5px;margin-left:8px;font-size:11px;color:#6b6654}.calc-toolbar select{height:28px;border:1px solid #dfd2a1;border-radius:4px;background:#fff;padding:0 7px;color:#403e36}.calc-toolbar input[type=color]{width:30px;height:28px;border:1px solid #dfd2a1;padding:2px;background:#fff;border-radius:4px}
+.calc-sheets{height:36px;display:flex;align-items:flex-end;gap:3px;padding:0 12px;background:#f7f2d9;border-bottom:1px solid #ded4a5;overflow:auto}.calc-sheet-tab,.calc-sheet-add{height:30px;padding:0 14px;border:1px solid #ddd3a6;border-bottom:0;border-radius:5px 5px 0 0;background:#ece7ca;color:#6a634d;cursor:pointer;font-size:11px;white-space:nowrap}.calc-sheet-tab.is-active{background:#fff;color:#755d00;font-weight:700;border-top:2px solid #d6b83f}.calc-sheet-add{font-size:18px;padding:0 10px;background:#fff9df;color:#8c7200}
+.calc-grid{background:#fff}.calc-grid th{background:#fff2b6;border-color:#e3d69e;color:#766b4c}.calc-grid td{border-color:#e8e0c6}.calc-grid td input:focus{box-shadow:inset 0 0 0 2px #d6b83f}.calc-grid td:hover{background:#fffdf4}
+.office-calc-mode .office-subactions .primary-action{background:#d6b83f;border-color:#c3a62e;color:#fff}.office-calc-mode .office-back-btn:hover{border-color:#d6b83f}
+/* TETORD 3.3 Slides PRO — Miku identity */
+.office-slides-mode .office-shell{--office-accent:#78b9df}.office-slides-mode .office-topbar{border-color:#b9ddf2}.miku-mark{font-size:.72em;background:#d9efff;color:#34789f;border-radius:999px;padding:2px 8px}.slides-toolbar{display:flex;gap:14px;align-items:center;padding:9px 16px;border-bottom:1px solid #c8e2f1;background:#f4fbff}.slides-toolbar label{display:flex;gap:7px;align-items:center;font-size:13px}.slides-toolbar select,.slides-toolbar input[type=color]{border:1px solid #b9d9eb;border-radius:7px;padding:5px;background:#fff}.slides-toolbar button{border:1px solid #b9d9eb;background:#fff;border-radius:7px;padding:6px 10px}.slide-canvas{position:relative;min-height:500px;overflow:auto}.theme-miku{background:#dceeff!important;color:#19465d}.theme-light{background:#fff!important;color:#222}.theme-dark{background:#202936!important;color:#f4f8ff}.theme-sunset{background:#ffe4d4!important;color:#65372b}.slide-image-preview{display:block;max-width:70%;max-height:260px;object-fit:contain;margin:18px auto;border-radius:10px;box-shadow:0 8px 24px rgba(38,78,110,.16)}.slide-present-card{position:relative}.slide-present-card img{display:block;max-width:70%;max-height:50vh;object-fit:contain;margin:28px auto 0;border-radius:14px}.slide-present-controls{display:flex;gap:10px;justify-content:center;padding:18px}.slide-present-controls button{padding:9px 15px;border-radius:8px;border:1px solid #aacfe5;background:#fff;color:#24516b}.slide-thumb{border-left:4px solid transparent}.slide-thumb.is-active{border-left-color:#78b9df;background:#e9f7ff}@media(max-width:800px){.slides-toolbar{flex-wrap:wrap}.slide-image-preview{max-width:92%}}
+
+/* TETORD 3.4 — Archivos / Office hub */
+.office-quick-actions{max-width:1100px;margin:22px auto 0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.office-quick-btn{min-height:66px;text-align:left;border:1px solid var(--color-chrome-border);background:var(--color-page);border-radius:7px;padding:11px 13px;cursor:pointer;color:var(--color-text)}
+.office-quick-btn:hover{background:var(--color-chrome)}.office-quick-btn strong,.office-quick-btn small{display:block}.office-quick-btn small{margin-top:4px;font-size:11px;color:var(--color-text-muted)}
+.office-quick-btn--writer{border-top:3px solid #d98a98}.office-quick-btn--calc{border-top:3px solid #d6b83f}.office-quick-btn--slides{border-top:3px solid #78a8df}
+.office-home-columns{max-width:1100px;margin:18px auto 0;display:grid;grid-template-columns:1fr 1fr;gap:18px}.office-home-panel{background:var(--color-page);border:1px solid var(--color-chrome-border);border-radius:8px;padding:15px;min-width:0}.office-panel-heading{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.office-panel-heading strong,.office-panel-heading span{display:block}.office-panel-heading span{font-size:11px;color:var(--color-text-muted);margin-top:3px}.office-panel-heading button{border:1px solid var(--color-chrome-border);background:var(--color-page);color:var(--color-text);border-radius:5px;padding:5px 9px;cursor:pointer}.office-app-grid--compact{grid-template-columns:repeat(2,1fr);margin:0}.office-home-recent{display:flex;flex-direction:column;gap:5px}.office-recent-item{display:flex;align-items:center;gap:10px;width:100%;text-align:left;border:0;background:transparent;padding:9px;border-radius:6px;cursor:pointer;color:var(--color-text)}.office-recent-item:hover{background:var(--color-chrome)}.office-recent-icon,.office-file-icon{width:30px;height:30px;display:grid;place-items:center;border-radius:5px;font-weight:700;font-size:13px;flex:none}.office-recent-item--writer .office-recent-icon,.office-file-row--writer .office-file-icon{background:#f7c8cf;color:#9e4657}.office-recent-item--calc .office-recent-icon,.office-file-row--calc .office-file-icon{background:#fff0a8;color:#9b7600}.office-recent-item--slides .office-recent-icon,.office-file-row--slides .office-file-icon{background:#cfe1ff;color:#416da8}.office-recent-main,.office-file-main{min-width:0;flex:1}.office-recent-main strong,.office-recent-main small,.office-file-main strong,.office-file-main small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.office-recent-main small,.office-file-main small{font-size:10px;color:var(--color-text-muted);margin-top:2px}.office-recent-arrow{font-size:20px;color:var(--color-text-faint)}.office-empty{padding:18px;color:var(--color-text-muted);font-size:12px;text-align:center}.office-files-toolbar{display:flex;align-items:center;gap:14px;padding:12px 16px;background:var(--color-page);border-bottom:1px solid var(--color-divider)}.office-search-field{display:flex;align-items:center;gap:8px;flex:1;max-width:520px;font-size:11px;color:var(--color-text-muted)}.office-search-field input{flex:1;border:1px solid var(--color-chrome-border);border-radius:5px;padding:7px 9px;background:var(--color-page);color:var(--color-text);outline:none}.office-search-field input:focus{box-shadow:0 0 0 2px rgba(120,168,223,.22)}.office-file-filters{display:flex;gap:4px}.office-file-filters button{border:1px solid var(--color-chrome-border);background:var(--color-page);color:var(--color-text-muted);border-radius:5px;padding:6px 9px;cursor:pointer;font-size:11px}.office-file-filters button.is-active{background:#eaf4ff;color:#416da8;border-color:#b9d6ef}.office-files-list{padding:14px 16px;overflow:auto}.office-file-row{display:flex;align-items:center;gap:12px;width:100%;border:1px solid var(--color-divider);background:var(--color-page);padding:11px 12px;margin-bottom:7px;border-radius:6px;text-align:left;color:var(--color-text);cursor:pointer}.office-file-row:hover{background:var(--color-chrome);border-color:var(--color-chrome-border)}.office-file-date{font-size:10px;color:var(--color-text-muted);white-space:nowrap}.office-file-open{font-size:11px;color:var(--color-text-muted);padding-left:6px}.office-files-view{height:100%}
+@media(max-width:900px){.office-quick-actions{grid-template-columns:repeat(2,1fr)}.office-home-columns{grid-template-columns:1fr}.office-file-date{display:none}}
+@media(max-width:620px){.office-quick-actions{grid-template-columns:1fr}.office-files-toolbar{align-items:stretch;flex-direction:column}.office-file-filters{overflow:auto}.office-file-row{padding:9px}.office-app-grid--compact{grid-template-columns:1fr}}

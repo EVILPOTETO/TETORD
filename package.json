@@ -1,6 +1,6 @@
 {
   "name": "tetord-desktop",
-  "version": "2.1.1",
+  "version": "3.4.0",
   "description": "TETORD — Teto + Word, desktop edition",
   "main": "electron/main.js",
   "author": "TETORD",
@@ -14,7 +14,9 @@
     "appId": "com.tetord.desktop",
     "productName": "TETORD",
     "artifactName": "TETORD-Setup-${version}-${arch}.${ext}",
-    "directories": { "output": "dist" },
+    "directories": {
+      "output": "dist"
+    },
     "files": [
       "MiWord/**/*",
       "electron/**/*",
@@ -25,7 +27,10 @@
     ],
     "asar": true,
     "win": {
-      "target": ["nsis", "portable"]
+      "target": [
+        "nsis",
+        "portable"
+      ]
     },
     "nsis": {
       "oneClick": false,

@@ -1,6 +1,121 @@
+# TETORD 2.8.0 — Paginación e impresión PRO
+
+## Implementado
+- Vista previa de impresión con páginas independientes, tamaño físico y contador.
+- Salto de página explícito respetado al construir la salida.
+- A4/Carta, vertical/horizontal y márgenes aplicados a `@page` y a cada hoja de salida.
+- Columnas 1/2/3 y guionización automática.
+- Guía visual opcional de numeración por bloques/párrafos.
+- Encabezado/pie y numeración de página renderizados por hoja.
+- Reglas de ruptura para títulos, tablas, imágenes, citas y bloques.
+- Accesos en Archivo, Disposición y Ribbon.
+
+## Arquitectura
+El editor sigue siendo un único `contenteditable` para conservar selección, historial, comentarios, control de cambios y referencias. `OutputManager.buildPrintPages()` crea una representación paginada independiente para vista previa e impresión.
+
+## Limitaciones conocidas
+- La edición en pantalla sigue siendo paginación visual, no un editor multipágina con DOM independiente por hoja.
+- La numeración visual de líneas cuenta bloques de contenido, no líneas tipográficas exactas.
+- En navegador, PDF se obtiene mediante el diálogo de impresión/Guardar como PDF.
+
+
+## TETORD 2.7.1 — Imágenes y tablas PRO
+
+- Herramientas contextuales funcionales para imágenes y tablas.
+- Imágenes: ajuste de texto, rotación, recorte uniforme/por lados, posición/alineación y texto alternativo.
+- Tablas: combinar/dividir celdas, alineación horizontal/vertical, color de celda, grosor de bordes, encabezado repetible al imprimir, filas/columnas y propiedades.
+- Se conserva la edición HTML5 + CSS3 + JavaScript sin frameworks.
+
+## TETORD 2.5.0 — Fase 2.5: Revisar
+
+Auditoría previa a los cambios: se leyó por completo `package.json`,
+`README.md`, `CHANGELOG.md` (llegó corrupto, ver nota en ese archivo),
+`VERSION`, este archivo, `MiWord/index.html`, `MiWord/js/app.js`,
+`MiWord/css/style.css`, `electron/main.js` y `electron/preload.js` antes
+de tocar nada. No se eliminó ninguna función existente; todos los módulos
+nuevos son adicionales.
+
+### Añadido
+- **`CommentsManager`**: comentarios anclados a una selección real de
+  texto (`<span class="tetord-comment-anchor" data-comment="...">`, JSON
+  con autor/fecha/texto/respuestas/estado). Nuevo, editar, responder,
+  resolver/reabrir, eliminar, panel lateral (`#commentsPanel`) y
+  navegación anterior/siguiente. Al vivir dentro del `innerHTML` del
+  editor, los comentarios se guardan y recuperan automáticamente con los
+  mecanismos ya existentes (localStorage, recuperación, exportación
+  HTML) sin tocar `DocumentModel`, `LocalDocuments` ni la recuperación.
+- **`TrackChangesManager`**: control de cambios sobre el mismo
+  `contenteditable` (sin reescribir el editor). Inserciones envueltas en
+  `<ins class="tetord-ins">`, borrados en `<del class="tetord-del">`,
+  ambos con autor y fecha. Activar/desactivar, mostrar/ocultar marcas,
+  aceptar/rechazar un cambio (el más cercano al cursor) y aceptar/
+  rechazar todos.
+- **`SynonymsManager`**: diccionario local curado de ~25 palabras
+  comunes en español. Si la palabra no está registrada se muestra un
+  mensaje explícito de "sin resultados" en vez de inventar sinónimos.
+  Queda un campo `provider` reservado para conectar un diccionario o
+  servicio externo en una fase futura.
+- **`CompareManager`**: comparación de texto plano contra otro archivo
+  (.html/.htm/.txt/.docx, reutilizando el importador DOCX ya existente)
+  mediante diferencias por palabras mediante LCS (subsecuencia común más
+  larga), mostrando agregados y eliminados. Es de solo lectura: no
+  reintegra los cambios al documento (ver limitaciones abajo).
+- **`ProtectionManager`**: protección de edición a nivel de aplicación
+  con contraseña (hash SHA-256 vía `crypto.subtle`, con fallback si no
+  está disponible). Documentado explícitamente en la UI y en el código
+  que **no es cifrado del archivo**: un documento protegido y exportado
+  sigue siendo legible por cualquier otro programa.
+- Nuevos controles en el menú "Revisar" (`#reviewMenu`) y en la pestaña
+  Revisar de la cinta, siguiendo el patrón visual existente
+  (`.tetord-panel`, `.recent-modal`, `.settings-check`).
+
+### Limitaciones conocidas y documentadas
+- El control de cambios marca con fiabilidad la escritura directa, IME y
+  pegado de texto simple. Los saltos de párrafo (Enter) y el pegado de
+  HTML con formato no se envuelven automáticamente en `<ins>` porque
+  hacerlo con seguridad exigiría un diffing estructural completo del DOM;
+  el texto que se escriba a continuación sí queda marcado con normalidad.
+  Esto se dejó así intencionalmente en vez de simular algo fràgil.
+- "Comparar documentos" no permite aceptar/rechazar diferencias
+  individuales; es una vista de comparación de solo lectura sobre texto
+  plano, no sobre el documento con formato.
+- "Sinónimos" usa un diccionario local pequeño, no un motor lingüístico.
+- "Protección" es una restricción de edición dentro de la sesión de
+  TETORD, no seguridad criptográfica del archivo guardado.
+
+### No implementado en esta versión (alcance de esta sesión)
+Las fases 2.6 (Referencias), 2.7 (Imágenes/Tablas pro), 2.8 (Paginación e
+impresión pro), 2.9 (Correspondencia) y 3.0 (TETORD Office) del prompt
+maestro **no se implementaron en esta versión** por el volumen de trabajo
+que representan (cada una es, por sí sola, comparable en tamaño a esta
+fase 2.5). Se prefirió completar por entero y probar la fase 2.5 en vez
+de repartir el esfuerzo en varias fases a medio terminar. Ver el reporte
+técnico de esta sesión para las notas de arquitectura sugeridas para cada
+fase pendiente.
+
+### Validación de la Fase 2.5
+- `node --check MiWord/js/app.js`: correcto.
+- `node --check electron/main.js` y `electron/preload.js`: correcto.
+- IDs duplicados en `index.html`: ninguno.
+- Referencias `getElementById()` sin elemento correspondiente: ninguna.
+- Balance de etiquetas `<div>`/`</div>`: correcto (214/214).
+- Prueba interactiva completa en navegador/Electron: **NO PROBADA** en
+  este entorno (sin acceso a un navegador real ni a Electron).
+
+## TETORD 2.4.0
+- Herramientas contextuales de imagen y tabla.
+- Ajuste de texto básico alrededor de imágenes.
+- Bordes y fondo de celdas.
+
 # PROJECT_STATE.md — Mi Word
 
 > Este archivo es la fuente de verdad del proyecto. Cualquier agente o desarrollador que continúe el trabajo debe leerlo primero.
+
+## Estado actual — TETORD 2.3.0
+
+- Cinta de opciones por pestañas implementada sobre los comandos existentes.
+- Sistema de estilos basado en datos implementado y persistido en documentos locales/recuperación.
+- Se mantienen las limitaciones conocidas: paginación física real, comentarios/control de cambios, correspondencia, referencias avanzadas y herramientas avanzadas de imágenes/tablas siguen pendientes.
 
 ## 1. Nombre del proyecto
 
@@ -509,3 +624,81 @@ Se incorporó una capa de funciones para acercar el producto a un procesador de 
 
 - Paleta de texto ampliada a 19 colores y resaltado a 15 colores.
 - Selector de fuentes ampliado con 14 familias comunes.
+
+## Auditoría 2.1.3 — Guardado y exportación
+
+**FASE 20 — ARCHIVOS: COMPLETADA (validación estática; ejecución interactiva no disponible en este entorno).**
+
+Se separaron conceptualmente `Guardar`, `Guardar como`, `Exportar` e `Imprimir/PDF`.
+`Guardar como` dispone de cuatro formatos: DOCX, PDF, TXT y HTML. El formato elegido se registra en `DocumentModel.fileFormat` y en los documentos recientes locales.
+
+- DOCX reutiliza el generador DOCX existente.
+- TXT se genera desde el texto plano del editor.
+- HTML reutiliza `buildHtmlFile()`.
+- PDF mantiene el flujo de impresión en navegador; en Electron usa `webContents.printToPDF` mediante IPC seguro.
+- Electron incorpora `electron/preload.js` con `contextBridge`; no se habilita `nodeIntegration`.
+- La selección de formato y nombre evita extensiones duplicadas.
+- `Inicio` conserva el documento en memoria y dispone de confirmación Guardar/No guardar/Cancelar para cambios pendientes.
+
+### PROBADO
+- Sintaxis de `MiWord/js/app.js` con `node --check`.
+- Sintaxis de `electron/main.js` y `electron/preload.js` con `node --check`.
+- Inspección estática de IDs, listeners y referencias de los nuevos controles.
+- Integridad de estructura del proyecto y ZIP final.
+
+### NO PROBADO
+- Ejecución visual/interactiva real de Electron o navegador.
+- Diálogos nativos de Guardar como.
+- Generación real de PDF por `printToPDF`.
+- Apertura posterior de DOCX/PDF/TXT/HTML en aplicaciones externas.
+
+
+## Actualización 2.1.4
+
+Se amplió la navegación superior para acercar la organización de TETORD al modelo de procesadores de texto de escritorio: Disposición, Referencias, Correspondencia y Ayuda. Los comandos disponibles reutilizan módulos existentes; las funciones aún no implementadas permanecen deshabilitadas o informativas.
+
+### Pruebas 2.1.4
+- `node --check MiWord/js/app.js` → sin errores.
+- IDs usados por `getElementById` → sin faltantes.
+- IDs duplicados → ninguno.
+- Estructura HTML principal → balance correcto.
+- ZIP final → integridad verificada con `unzip -t`.
+- Ejecución interactiva en navegador/Electron → NO PROBADA en este entorno.
+
+
+## 2.3.0 — Paginación física visual
+El editor representa el documento como una secuencia vertical de hojas con altura basada en el tamaño de papel, márgenes y orientación. Los saltos explícitos y el crecimiento del contenido actualizan el contador de páginas. Sigue existiendo un único contenteditable para evitar romper selección e historial.
+
+
+## 2.6.0 — Referencias
+- Tabla de contenido actualizable basada en H1/H2/H3.
+- Notas al pie y notas al final.
+- Fuentes locales, citas y bibliografía.
+- Títulos numerados para figuras/tablas.
+- Referencias cruzadas a marcadores, encabezados y títulos.
+- Entradas de índice e índice generado.
+- Pendiente: actualización inteligente de campos al estilo Word y motor bibliográfico avanzado.
+
+
+## TETORD 2.9.0 — Correspondencia
+La fase 2.9 incorpora combinación de correspondencia local: destinatarios desde CSV/TSV, campos combinados, vista previa por registro y generación de un documento HTML combinado. No requiere servidor.
+
+## TETORD 3.1.0 — Office
+Suite unificada: Writer, Calc, Slides y Messenger. Calc y Slides son módulos iniciales funcionales; Messenger es local y preparado para backend futuro.
+
+
+### 3.1.0 Writer PRO
+Historial local de versiones, saltos de sección, pegado sin formato, estadísticas de selección y atajos de productividad.
+
+## TETORD 3.3.0 — Slides PRO
+Slides recibe temas (Miku Blue, claro, oscuro y atardecer), fondo configurable, imágenes locales persistidas, duplicación y presentación navegable. Writer=Teto rojo pastel, Calc=Neru amarillo pastel, Slides=Miku azul pastel.
+
+
+## TETORD 3.4.0 — Office Files
+- Estado: implementado.
+- Nuevo módulo Archivos en TETORD Office.
+- Inicio muestra recientes de Writer/Calc/Slides.
+- Búsqueda y filtros locales.
+- Apertura directa de documentos Writer guardados localmente.
+- Creación rápida de Writer/Calc/Slides.
+- Sin servidor, nube ni sincronización online.
